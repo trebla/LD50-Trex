@@ -140,6 +140,9 @@ camera.components['look-controls'].data.enabled=false;
 active=true;
 musicSound.play();
 camera.setAttribute("animation","property: position; from:0 1.6 0; to: 0 1.8 16 dur: 3000;");
+
+introtext.setAttribute("animation","property: position; from:0 1 2; to: 0 1 -4 dur: 3000;");
+
 printNext();
 }
 
@@ -157,6 +160,8 @@ setTimeout(function() {
 active = false;
 camera.components['look-controls'].data.enabled=true;
 camera.setAttribute("animation","property: position; from:0 1.8 16; to: 0 1.6 0;  dur: 3000;");
+introtext.setAttribute("animation","property: position;  from: 0 1 -4; to:0 1 2; dur: 1000;");
+
 musicSound.fade(1, 0, 4000)
 }, 10000);
 }
@@ -170,6 +175,8 @@ musicSound.fade(0, 1, 1000);
 musicSound.play();
 camera.setAttribute("position","0 1.8 16");
 camera.setAttribute("rotation","0 0 0");
+introtext.setAttribute("animation","property: position; from:0 1 2; to: 0 1 -4 dur: 3000;");
+
 // camera.components['look-controls'].data.enabled=false;
 introtext.setAttribute("text",{value:"T-rex is hero! His smelly breath saved everybody! His new friends wanted to reward him and they all help him to clean his teeth. Now his breath smells fresh and clean and everybody wants to be his friend!"});
 
@@ -187,7 +194,7 @@ camera.setAttribute("rotation","0 0 0");
 
 var t1 = setTimeout(function() { 
 
-camera.components['look-controls'].data.enabled=false;
+//camera.components['look-controls'].data.enabled=false;
 
 introtext.setAttribute("text",{value:"T-rex is hero! His smelly breath saved everybody! His new friends wanted to reward him and they all help him to clean his teeth. Now his breath smells fresh and clean and everybody wants to be his friend!"});
 
@@ -201,10 +208,19 @@ ambientSound.fade(.3, 0, 1000);
 introtext.setAttribute("text",{value:"Celebration ends up quick, there is coming new meteorite... No more stinky breath and acid spit..."});
 camera.components['look-controls'].data.enabled=false;
 
-}, 20000);
+var t3=setTimeout(function() { 
+introtext.setAttribute("text",{value:"The End"});
+
+explosionSound.volume=.7;
+explosionSound.play();
+
+},5000 );
 
 
-}, 20000);
+}, 10000);
+
+
+}, 10000);
 }
 
 
@@ -399,13 +415,6 @@ var musicSound = new Howl({
 
 <a-entity id="asteroidPos" class="nonclickable" rotation="0 0 0" geometry="depth: 60; height: .0001 width: .00001" material="opacity: 0;">
 
-<!--
-<a-entity class="non-clickable" light="color: #ffe29b; type: point; shadowRadius: 0.65; decay: 0.07; intensity: 0.55" position="-1.39557 8.18795 -16.85515" animation="property: color;
-                   from: #f00; to: #ff0;
-                   loop: true; dir: alternate; dur: 80"></a-entity>
-                   
-                    oculus-go-controls laser-controls raycaster="lineColor: red; lineOpacity: 0.5" cursor cursor-asteroid
--->
 
     
     <a-entity id="explosionFX"  cursor-asteroid="" gltf-model="#explosion1" scale="0.8 0.8 0.8" position="0 8.729 -21.17531" animation-mixer="clip: Explosion;duration:5;" ></a-entity>
@@ -425,14 +434,13 @@ var musicSound = new Howl({
     <a-entity id="lightDirShadowcaster" light="type: directional;" position="1 1 1"></a-entity>
 
     
-  <a-entity >  
-<a-entity id="introtext1" position="0 1 12" opacity="1" text="font: mozillavr; align: center; width: 8; color: white; value: Many year ago on planet Earth, there was living T-Rex who had no friends."></a-entity>
-    </a-entity>
+
     
     
     
  <a-entity id="camera"  position-listener rotation-listener camera="" position="0 1.6 16" wasd-controls="adEnabled: false; wsEnabled: false" rotation="0 0 0" look-controls="" aframe-injected="" data-aframe-inspector-original-camera="">
  
+ <a-entity id="introtext1" position="0 1 2" opacity="1" text="font: mozillavr; align: center; width: 8; color: white; value: Many year ago on planet Earth, there was living T-Rex who had no friends."></a-entity>
  
    <a-entity cursor="fuse: true; fuseTimeout: 500"
             position="0 0 -1"
