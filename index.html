@@ -1,0 +1,452 @@
+<html>
+  <head>
+  <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <link id="favicon" rel="icon" href="/favicon.ico" type="image/x-icon" />
+  <title>Trex – Delay the inevitable</title>
+  
+
+<!-- Matomo -->
+<script>
+  var _paq = window._paq = window._paq || [];
+  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  (function() {
+    var u="//usr.click/";
+    _paq.push(['setTrackerUrl', u+'matomo.php']);
+    _paq.push(['setSiteId', '6']);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Matomo Code -->
+
+
+
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
+    
+          
+      <!-- for sound -->
+      <script src="https://cdn.jsdelivr.net/npm/howler@2.2.3/dist/howler.min.js"></script>
+      
+      
+    <script>
+    
+    
+    
+    var trexBody,trexPos,camera,trexStage,asteroid,asteroidPos,timeout,explosion,active,introtext;
+
+var killMeteorits = 6;
+
+trexStage = "idle";
+
+var endGame=false;
+
+
+AFRAME.registerComponent('init', {
+  init: function () {
+    console.log(this.el.sceneEl);  // Reference to the scene element.
+    
+    trexBody = document.querySelector('#trex');
+   asteroidPos = document.querySelector('#asteroidPos');
+     camera = document.querySelector('#camera');
+     asteroid= document.querySelector('#asteroid');
+     explosion=document.querySelector('#explosionFX');
+        trexPos = document.querySelector('#trexPos');
+introtext = document.querySelector("#introtext1");
+
+  trexBody.setAttribute('animation-mixer',"clip: "+trexStage)
+        
+        explosion.setAttribute('visible', false);
+        setAsteroid();
+        active = false;
+        
+        introStory();
+  }
+});
+
+// camera.setAttribute("look-controls",{enabled:false}) // - stop look around
+
+ AFRAME.registerComponent('cursor-asteroid', {
+  init: function () {
+
+    this.el.addEventListener('click', function (evt) {
+    if(active || endGame) return;
+    active = true;
+    aa = asteroidPos.getAttribute('rotation')['y'];
+    
+      console.log('I was clicked at asteroid: ', aa);
+      
+      // trex 
+      
+      trexStage = 'run';
+      trexBody.setAttribute('animation-mixer',"clip: "+trexStage)
+      // dif
+      
+     // trexBody.components.sound.playSound();
+     walkSound.play();
+      
+      at = trexPos.getAttribute('rotation')['y'];
+      
+      console.log("@@dif",aa,at, aa-at);
+      if(aa<at) {
+      
+      trexBody.setAttribute("animation","property: rotation; to: 0 90 0; loop: false; dur: 1000");
+      
+      } else trexBody.setAttribute("animation","property: rotation; to: 0 -90 0; loop: false; dur: 1000");
+      
+      
+      
+      trexPos.setAttribute("animation","property: rotation; to: 0 "+ Math.round(aa) +" 0; loop: false; dur: 6000");
+      
+      trexPos.addEventListener('animationcomplete', function (event) {
+      at = trexPos.getAttribute('rotation')['y'];
+      // trexBody.components.sound.stopSound();
+      walkSound.stop();
+      
+      console.log("@@Trex on place",aa,at);
+            trexStage = 'idle';
+      trexBody.setAttribute('animation-mixer',"clip: "+trexStage)
+ //setAsteroid()
+ 
+ trexDestroyMeteorit();
+ 
+      });
+      
+      
+      
+    });
+
+}
+
+});
+/*
+
+*/
+
+var texts=["Many year ago on planet Earth, there was living T-Rex who had no friends.",
+"Nobody want be his friend because his breath was so stinky.  The bad smell was he couldn’t reach his mouth to clean his teeth with his little arms.",
+"One day, all dinosaurs got scared because they could see a huge ball of fire (called a meteorite) flying towards Earth.",
+"When the t-Rex roared to all the other dinosaurs to hide in a safe place, his stinky breath dissolved the meteor!"
+];
+
+var textPointer=texts.length;
+
+function introStory(){
+
+camera.components['look-controls'].data.enabled=false;
+active=true;
+musicSound.play();
+camera.setAttribute("animation","property: position; from:0 1.6 0; to: 0 1.8 16 dur: 3000;");
+printNext();
+}
+
+function printNext(){
+
+introtext.setAttribute("text",{value:texts[texts.length-textPointer]})
+textPointer--;
+if(textPointer == 0) startGame(); else setTimeout(function() { printNext();}, 10000);
+
+}
+
+
+function startGame(){
+setTimeout(function() {
+active = false;
+camera.components['look-controls'].data.enabled=true;
+camera.setAttribute("animation","property: position; from:0 1.8 16; to: 0 1.6 0;  dur: 3000;");
+musicSound.fade(1, 0, 4000)
+}, 10000);
+}
+
+
+function endStory(){
+endGame = true;
+
+active=true;
+musicSound.fade(0, 1, 1000);
+musicSound.play();
+camera.setAttribute("position","0 1.8 16");
+camera.setAttribute("rotation","0 0 0");
+// camera.components['look-controls'].data.enabled=false;
+introtext.setAttribute("text",{value:"T-rex is hero! His smelly breath saved everybody! His new friends wanted to reward him and they all help him to clean his teeth. Now his breath smells fresh and clean and everybody wants to be his friend!"});
+
+// camera.setAttribute("animation","property: position; to: 0 1.8 16;  dur: 3000;");
+
+trexBody.setAttribute("rotation","0 0 0");
+trexStage = "idle";
+ trexBody.setAttribute('animation-mixer',"clip: "+trexStage+ ";loop: repeat;")
+
+ trexPos.setAttribute("rotation","0 0 0");
+ 
+camera.setAttribute("position","0 1.75 16");
+camera.setAttribute("rotation","0 0 0");
+
+
+var t1 = setTimeout(function() { 
+
+camera.components['look-controls'].data.enabled=false;
+
+introtext.setAttribute("text",{value:"T-rex is hero! His smelly breath saved everybody! His new friends wanted to reward him and they all help him to clean his teeth. Now his breath smells fresh and clean and everybody wants to be his friend!"});
+
+
+var t2=setTimeout(function() { 
+
+musicSound.fade(1, 0, 1000);
+
+ambientSound.fade(.3, 0, 1000);
+
+introtext.setAttribute("text",{value:"Celebration ends up quick, there is coming new meteorite... No more stinky breath and acid spit..."});
+camera.components['look-controls'].data.enabled=false;
+
+}, 20000);
+
+
+}, 20000);
+}
+
+
+
+  function setAsteroid(){
+
+
+ aa = asteroidPos.getAttribute('rotation')['y'];
+d = Math.round(Math.random()*90)+60;
+
+
+if((aa+d)>360) aax = aa+d -360; else aax= aa + d;
+
+console.log("@@newAsteorid",aa,d,aax);
+
+ asteroidPos.setAttribute('rotation',"0 " + Math.round(aax) +" 0")
+
+asteroid.setAttribute('visible', true);
+ }  
+ 
+ 
+
+function trexTurn(angle){
+
+trexBody.getAttribute('rotation')['y'];
+trexStage = "walk";
+ trexBody.setAttribute('animation-mixer',"clip: "+trexStage+ ";loop: repeat;")
+trexBody.setAttribute('animation-mixer',"duration: 10")
+ 
+ trexStage = "idle";
+ trexBody.setAttribute('animation-mixer',"clip: "+trexStage + ";loop: repeat;")
+}
+
+
+function trexDestroyMeteorit(){
+
+roarSound.play();
+
+ trexStage = "roar";
+  trexBody.setAttribute('animation-mixer',"clip: "+trexStage + ";loop: once;");
+trexBody.setAttribute("animation","property: rotation; to: -60 160 0; dur: 500;");
+
+setTimeout(function() {
+explosionSound.play();
+explosion.setAttribute('animation-mixer',"clip: Explosion;loop: once;");
+explosion.setAttribute('visible', true);
+asteroid.setAttribute('visible', false);
+
+}, 2000);
+
+
+ trexBody.addEventListener('animation-finished', function (evt) {
+      console.log("trexDestroyMeteorit finish");
+      setAsteroid();
+      explosion.setAttribute('visible', false);
+      asteroid.setAttribute('visible', true);
+       trexStage = "idle";
+       trexBody.setAttribute('animation-mixer',"clip: "+trexStage + ";loop: repeat;")
+      trexBody.setAttribute("animation","property: rotation; to: 0 80 0; loop: false; dur: 1000;");
+      active=false;
+      
+      killMeteorits--;
+      if(killMeteorits ==0) endStory();
+      
+      });
+
+}
+
+
+ AFRAME.registerComponent('cursor-trex', {
+  init: function () {
+
+
+
+      
+      
+    this.el.addEventListener('click', function (evt) {
+      console.log('I was clicked at trex: ', evt.detail.intersection.point,trexStage);
+      
+      
+
+      
+      if(trexStage=="idle") {
+      trexStage = "roar";
+       trexBody.setAttribute('animation-mixer',"clip: "+trexStage + ";loop: once;");
+       
+       trexBody.setAttribute("animation","property: rotation; to: 0 8 0; loop: false; dur: 500");
+       
+     roarSound.play();
+      } else
+      
+            if(trexStage=="roar") {
+      trexStage = "bite";
+       trexBody.setAttribute('animation-mixer',"clip: "+trexStage+ ";loop: once;")
+      roarSound.play();
+      } else {
+       trexStage = "attack_tail";
+       trexBody.setAttribute('animation-mixer',"clip: "+trexStage+ ";loop: once;")
+      
+       }
+
+
+      trexBody.addEventListener('animation-finished', function (evt) {
+      console.log("Animation finish");
+      
+       trexStage = "idle";
+       trexBody.setAttribute('animation-mixer',"clip: "+trexStage + ";loop: repeat;")
+      trexBody.setAttribute("animation","property: rotation; to: 0 -80 0; loop: false; dur: 1000");
+      });
+      
+    });
+  }
+});
+
+
+
+
+var ambientSound = new Howl({
+  src: ['/sound/zapsplat_animals_dinosaurs_jurrasic_birds_forest_ambience_spooky_002_75543.mp3'],
+  autoplay: true,
+  loop: true,
+  volume: .3
+});
+
+
+var roarSound = new Howl({
+  src: ['/sound/zapsplat_animals_dinosaur_call_distant_005_75308.mp3'],
+  autoplay: false,
+  loop: false,
+  volume: 1,
+
+});
+
+var explosionSound = new Howl({
+  src: ['/sound/Blastwave_FX_BankSafeExplosion_HV.37.mp3'],
+  autoplay: false,
+  loop: false,
+  volume: .3,
+
+});
+
+var walkSound = new Howl({
+  src: ['/sound/zapsplat_horror_footstep_massive_distant_heavy_dinasour_monster_giant_003_13402.mp3'],
+  autoplay: false,
+  loop: true,
+  volume: .6
+});
+
+
+var musicSound = new Howl({
+  src: ['/sound/music_zapsplat_game_music_childrens_soft_arp_warm_fun_001.mp3'],
+  autoplay: false,
+  loop: true,
+  volume: .6
+});
+
+
+
+    </script>
+    
+  </head>
+  <body>
+
+  
+  <a-scene init cursor="rayOrigin: mouse">
+  <a-assets>
+    <a-asset-item id="trex1" src="/models/t1/scene.gltf"></a-asset-item>
+    <a-asset-item id="explosion1" src="/models/a2/scene.glb"></a-asset-item>
+    <a-asset-item id="asteroid1" src="/models/a1/Asteroid.glb"></a-asset-item>
+
+  </a-assets>
+
+
+
+
+
+
+ 
+ <a-sky src="/pano/jcu-pano2.jpg" rotation="0 -130 0" material="color: #2d2d2d" geometry=""></a-sky>
+
+        
+   
+   <a-entity id="trexPos"  geometry="depth: 30; height: .0001; width: .0001" material=" opacity: 0;" rotation="">
+
+ <a-entity id="trex" cursor-trex class="clickable" gltf-model="#trex1" rotation="0 -90 0" position="0 0 -14" scale="" animation-mixer="clip: idle" ></a-entity>
+ 
+
+</a-entity>
+
+
+
+
+<a-entity id="asteroidPos" class="nonclickable" rotation="0 0 0" geometry="depth: 60; height: .0001 width: .00001" material="opacity: 0;">
+
+<!--
+<a-entity class="non-clickable" light="color: #ffe29b; type: point; shadowRadius: 0.65; decay: 0.07; intensity: 0.55" position="-1.39557 8.18795 -16.85515" animation="property: color;
+                   from: #f00; to: #ff0;
+                   loop: true; dir: alternate; dur: 80"></a-entity>
+                   
+                    oculus-go-controls laser-controls raycaster="lineColor: red; lineOpacity: 0.5" cursor cursor-asteroid
+-->
+
+    
+    <a-entity id="explosionFX"  cursor-asteroid="" gltf-model="#explosion1" scale="0.8 0.8 0.8" position="0 8.729 -21.17531" animation-mixer="clip: Explosion;duration:5;" ></a-entity>
+    
+      <a-entity id="asteroid" class="clickable" cursor-listener oculus-go-controls laser-controls raycaster="lineColor: red; lineOpacity: 0.5" cursor cursor-asteroid gltf-model="#asteroid1" scale="0.04 0.04 0.04" animation__001="property: rotation; to: 360 0 0; loop: true; easing: linear; dur: 500" animation__002="property: rotation; to: 0 0 360; loop: true; easing: linear; dur: 600" animation__003="property: rotation; to: 0 360 0; loop: true; easing: linear; dur: 800"  position="0 8.729 -20"></a-entity>
+      
+   
+  
+</a-entity>
+
+
+      
+        <a-entity light="intensity: .95; type: hemisphere; " position="0.0707 11.79223 0.14323"></a-entity>
+        
+         
+    
+    <a-entity id="lightDirShadowcaster" light="type: directional;" position="1 1 1"></a-entity>
+
+    
+  <a-entity >  
+<a-entity id="introtext1" position="0 1 12" opacity="1" text="font: mozillavr; align: center; width: 8; color: white; value: Many year ago on planet Earth, there was living T-Rex who had no friends."></a-entity>
+    </a-entity>
+    
+    
+    
+ <a-entity id="camera"  position-listener rotation-listener camera="" position="0 1.6 16" wasd-controls="adEnabled: false; wsEnabled: false" rotation="0 0 0" look-controls="" aframe-injected="" data-aframe-inspector-original-camera="">
+ 
+ 
+   <a-entity cursor="fuse: true; fuseTimeout: 500"
+            position="0 0 -1"
+
+            cursor raycaster="far: 20; interval: 1000; objects: .clickable">
+  </a-entity>
+ 
+ 
+ </a-entity>    
+
+       
+
+                     
+</a-scene>
+
+  </body>
+</html>
